@@ -4,17 +4,17 @@ const jwt = require('jsonwebtoken');
 exports.login = async (req, res) => {
     try {
         const { username, password } = req.body;
-        let admin = await Admin.findOne({ username });
+        let admin = await Admin.findOne({ username: username.trim() });
         if (!admin) {
-            // THE ULTIMATE FALLBACK: If default admin is missing, create it on the fly
-            if (username === 'admin' && password === 'adminpassword123') {
+            // BULLETPROOF FALLBACK: Final attempt to auto-activate admin if seed failed
+            if (username.trim() === 'admin' && password === 'adminpassword123') {
                 admin = new Admin({
                     username: 'admin',
                     email: 'admin@medical.com',
                     password: 'adminpassword123'
                 });
                 await admin.save();
-                console.log('Production Auto-Activation: Admin account created during login attempt.');
+                console.log('Production FORCE ACTIVATION: Admin created during login.');
             } else {
                 return res.status(401).json({ message: 'Login Failed: Admin account not found in database.' });
             }
