@@ -3,6 +3,12 @@
   "version": "1.0.0",
   "scripts": {
     "build": "npm install --prefix server",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "install:server": "npm install --prefix server",
+    "install:client": "npm install --prefix client",
+    "build:client": "npm run build --prefix client"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }
