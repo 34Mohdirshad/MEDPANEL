@@ -2,8 +2,9 @@
   "name": "medpanel-root",
   "version": "1.0.0",
   "scripts": {
-    "build": "npm install --prefix server",
+    "build": "npm run install:server && npm run install:client && npm run build:client",
     "start": "node server/index.js",
+    "install:all": "npm run install:server && npm run install:client",
     "install:server": "npm install --prefix server",
     "install:client": "npm install --prefix client",
     "build:client": "npm run build --prefix client"

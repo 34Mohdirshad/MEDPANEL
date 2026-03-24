@@ -2,7 +2,9 @@
   "version": 2,
   "functions": {
     "server/index.js": {
-      "runtime": "@vercel/node"
+      "runtime": "nodejs22.x",
+      "memory": 1024,
+      "maxDuration": 15
     }
   },
   "rewrites": [
@@ -11,8 +13,12 @@
       "destination": "/server/index.js"
     },
     {
+      "source": "/assets/(.*)",
+      "destination": "/client/dist/assets/$1"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/client/dist/index.html"
     }
   ]
 }
