@@ -2,7 +2,7 @@
   "name": "medpanel-root",
   "version": "1.0.0",
   "scripts": {
-    "start": "cd server && node index.js",
-    "build": "cd server && npm install"
+    "build": "npm install --prefix server",
+    "start": "node server/index.js"
   }
 }
