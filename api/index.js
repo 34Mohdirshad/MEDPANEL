@@ -13,48 +13,52 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection logic for serverless
-let cachedHandler = null;
-
-module.exports = async (req, res) => {
-    try {
-        await connectDB();
-        
-        // Define routes inside the handler wrapper if needed, 
-        // but easier to just use the express app directly.
-        // We'll re-mount routes here for complete isolation inside the lambda
-        
-        // Local health check
-        if (req.url === '/api' || req.url === '/api/') {
-            return res.json({ message: 'MedPortal API is active (Serverless)', db: 'connected' });
-        }
-        
-        // Manual routing for common paths if Express has issues with rewrites
-        // (Just a backup, Express usually handles it)
-        
-        return app(req, res);
-    } catch (err) {
-        console.error('SERVERLESS_ERROR:', err);
-        return res.status(500).json({ 
-            error: 'Serverless Function Error', 
-            details: err.message,
-            hint: 'Check MONGODB_URI and Atlas Whitelist (0.0.0.0/0)'
-        });
-    }
-};
-
-// Mount routes on the app instance
+// PRE-MOUNT ROUTES (Must be before export for reliability)
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/files', fileRoutes);
 
-// Health check and Debug
+// Diagnostic Health Check
+app.get('/api', (req, res) => {
+    res.json({ 
+        message: 'Medical Portal API is active (Consolidated)', 
+        isVercel: !!process.env.VERCEL,
+        mongoSet: !!process.env.MONGODB_URI
+    });
+});
+
 app.get('/api/debug-db', async (req, res) => {
     try {
+        await connectDB();
         const Admin = require('../server/models/Admin');
         const count = await Admin.countDocuments();
-        res.json({ adminCount: count, status: 'Database reach OK' });
+        res.json({ 
+            status: 'Database OK', 
+            adminCount: count, 
+            mongoUriDefined: !!process.env.MONGODB_URI,
+            nodeVersion: process.version
+        });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ 
+            error: 'DB Diagnostic Failed', 
+            details: err.message,
+            stack: err.stack
+        });
     }
 });
+
+module.exports = async (req, res) => {
+    try {
+        // Ensure connection on every request for serverless
+        await connectDB();
+        
+        // Let Express handle the rest
+        return app(req, res);
+    } catch (err) {
+        console.error('SERVERLESS_INVOCATION_ERROR:', err);
+        return res.status(500).json({ 
+            error: 'FATAL Serverless Error', 
+            message: err.message 
+        });
+    }
+};
