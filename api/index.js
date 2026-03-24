@@ -13,52 +13,44 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// PRE-MOUNT ROUTES (Must be before export for reliability)
-app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/files', fileRoutes);
-
-// Diagnostic Health Check
-app.get('/api', (req, res) => {
-    res.json({ 
-        message: 'Medical Portal API is active (Consolidated)', 
-        isVercel: !!process.env.VERCEL,
-        mongoSet: !!process.env.MONGODB_URI
-    });
+// LOGGING (Only for server console)
+app.use((req, res, next) => {
+    console.log(`[${req.method}] ${req.url}`);
+    next();
 });
 
-app.get('/api/debug-db', async (req, res) => {
+// MOUNT ROUTES Double-Mount pattern for cloud stability
+// Handles both /api/auth and /auth relative paths
+app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/files', fileRoutes);
+app.use('/api/files', fileRoutes);
+
+// Health check and Diagnostic
+app.get(['/api', '/api/debug-db', '/debug-db'], async (req, res) => {
     try {
         await connectDB();
         const Admin = require('../server/models/Admin');
         const count = await Admin.countDocuments();
         res.json({ 
-            status: 'Database OK', 
+            status: 'Database reach OK', 
             adminCount: count, 
             mongoUriDefined: !!process.env.MONGODB_URI,
-            nodeVersion: process.version
+            vercelEnv: !!process.env.VERCEL,
+            reqPath: req.url
         });
     } catch (err) {
-        res.status(500).json({ 
-            error: 'DB Diagnostic Failed', 
-            details: err.message,
-            stack: err.stack
-        });
+        res.status(500).json({ error: err.message, path: req.url });
     }
 });
 
 module.exports = async (req, res) => {
     try {
-        // Ensure connection on every request for serverless
         await connectDB();
-        
-        // Let Express handle the rest
         return app(req, res);
     } catch (err) {
-        console.error('SERVERLESS_INVOCATION_ERROR:', err);
-        return res.status(500).json({ 
-            error: 'FATAL Serverless Error', 
-            message: err.message 
-        });
+        return res.status(500).json({ error: 'Serverless Invocation Fatal', details: err.message });
     }
 };
