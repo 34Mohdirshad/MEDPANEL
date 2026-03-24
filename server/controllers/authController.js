@@ -8,7 +8,7 @@ exports.login = async (req, res) => {
         if (!admin || !(await admin.comparePassword(password))) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET || 'MedPortal_Secure_Secret_Default', { expiresIn: '1d' });
         res.json({ token, admin: { username: admin.username, email: admin.email } });
     } catch (error) {
         res.status(500).json({ message: error.message });
