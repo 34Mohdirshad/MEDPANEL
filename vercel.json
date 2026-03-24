@@ -1,16 +1,21 @@
 {
   "version": 2,
-  "functions": {
-    "server/index.js": {
-      "runtime": "nodejs22.x",
-      "memory": 1024,
-      "maxDuration": 15
-    }
-  },
   "rewrites": [
     {
+      "source": "/api/auth/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/api/categories/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/api/files/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
       "source": "/api/(.*)",
-      "destination": "/server/index.js"
+      "destination": "/api/index.js"
     },
     {
       "source": "/assets/(.*)",
