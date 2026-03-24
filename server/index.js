@@ -14,7 +14,21 @@ app.use(express.json());
 
 // Health Check
 app.get('/api', (req, res) => {
-    res.json({ message: 'Medical Portal API is active' });
+    res.json({ 
+        message: 'Medical Portal API is active',
+        environment: process.env.VERCEL ? 'production' : 'local' 
+    });
+});
+
+// Debug Route (temporary for testing)
+app.get('/api/debug-db', async (req, res) => {
+    try {
+        const Admin = require('./models/Admin');
+        const count = await Admin.countDocuments();
+        res.json({ message: 'Database check', adminCount: count });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Main Routes
