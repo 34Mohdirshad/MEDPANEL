@@ -12,6 +12,11 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// Health Check
+app.get('/api', (req, res) => {
+    res.json({ message: 'Medical Portal API is active' });
+});
+
 // Main Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
