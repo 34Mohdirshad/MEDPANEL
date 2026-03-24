@@ -1,0 +1,8 @@
+{
+  "name": "medpanel-root",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "cd server && node index.js",
+    "build": "cd server && npm install"
+  }
+}
