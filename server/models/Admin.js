@@ -7,11 +7,10 @@ const AdminSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true }
 }, { timestamps: true });
 
-AdminSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
+AdminSchema.pre('save', async function() {
+    if (!this.isModified('password')) return;
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
 AdminSchema.methods.comparePassword = async function(candPass) {
