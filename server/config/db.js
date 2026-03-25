@@ -10,8 +10,16 @@ const connectDB = async () => {
         return;
     }
 
+    const mongoUri = process.env.MONGODB_URI;
+    console.log('Attempting to connect to MongoDB...');
+    if (mongoUri) {
+        console.log('MONGODB_URI is defined (type: ' + (mongoUri.startsWith('mongodb+srv') ? 'Atlas' : 'Local/Other') + ')');
+    } else {
+        console.error('CRITICAL: MONGODB_URI is undefined!');
+    }
+
     try {
-        const db = await mongoose.connect(process.env.MONGODB_URI, {
+        const db = await mongoose.connect(mongoUri || 'mongodb://localhost:27017/medical_gallery', {
             serverSelectionTimeoutMS: 5000,
             dbName: 'medical_gallery'
         });
